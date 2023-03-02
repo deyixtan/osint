@@ -1,0 +1,6 @@
+{
+  "name": "Reddit",
+  "url": "https://www.reddit.com/user/${username}",
+  "elem_query_selector": "div > div > h1",
+  "elem_contains_content": "${username}"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Carousell",
+  "url": "https://www.carousell.sg/${username}",
+  "elem_query_selector": "#main > div > div > div > div > p",
+  "elem_contains_content": "${username}"
+}

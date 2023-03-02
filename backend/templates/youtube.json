@@ -1,0 +1,6 @@
+{
+  "name": "YouTube",
+  "url": "https://youtube.com/@${username}",
+  "elem_query_selector": "#channel-handle",
+  "elem_contains_content": "${username}"
+}

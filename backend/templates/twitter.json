@@ -1,0 +1,6 @@
+{
+  "name": "Twitter",
+  "url": "https://twitter.com/${username}",
+  "elem_query_selector": "div:nth-child(3) > div > div > div > div > div > div > div > div > div > div > div > span",
+  "elem_contains_content": "${username}"
+}

@@ -1,0 +1,6 @@
+{
+  "name": "GitHub",
+  "url": "https://github.com/${username}",
+  "elem_query_selector": "h1 > span.p-nickname.vcard-username.d-block",
+  "elem_contains_content": "${username}"
+}

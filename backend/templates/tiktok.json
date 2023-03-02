@@ -1,0 +1,6 @@
+{
+  "name": "Tiktok",
+  "url": "https://tiktok.com/@${username}",
+  "elem_query_selector": "div > div > div > div > h2",
+  "elem_contains_content": "${username}"
+}

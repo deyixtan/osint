@@ -1,0 +1,7 @@
+{
+  "name": "Instagram",
+  "url": "https://www.instagram.com/${username}",
+  "elem_query_selector": "section > main > div > header > section > div > h2",
+  "elem_contains_content": "${username}",
+  "user-agent": "facebookexternalhit/1.1"
+}

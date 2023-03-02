@@ -1,0 +1,7 @@
+{
+  "name": "Facebook",
+  "url": "https://www.facebook.com/${username}",
+  "elem_query_selector": "div > div:nth-child(1) > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div > div:nth-child(2) > div > span",
+  "elem_contains_content": "Friends",
+  "user-agent": "facebookexternalhit/1.1"
+}

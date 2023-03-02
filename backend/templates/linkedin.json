@@ -1,0 +1,6 @@
+{
+  "name": "Linkedin",
+  "url": "https://linkedin.com/in/${username}/",
+  "elem_query_selector": "#main-content > section > div > section > section > div > div > div:nth-child(1) > h1",
+  "elem_contains_content": ""
+}
