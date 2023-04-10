@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { Cluster } from "puppeteer-cluster"
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth"
 import { canStalk } from "./events/handlers.js";
@@ -56,63 +57,50 @@ const makeMessageObj = (
 const stalk = async (ws, username) => {
   ws.send(JSON.stringify({ topic: "clearResults" }));
 
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-  await page.setViewport({ width: 1080, height: 1024 });
+  const cluster = await Cluster.launch({
+    concurrency: Cluster.CONCURRENCY_CONTEXT,
+    maxConcurrency: 10,
+  });
 
-  const templates_jsons = await get_templates_jsons(username);
-  for (const templates_json of templates_jsons) {
+  await cluster.task(async ({ page, data: data }) => {
+    await page.setViewport({ width: 1920, height: 1080 });
     if (!canStalk) {
       ws.send(JSON.stringify({ topic: "stalkCancelled" }));
       return;
     }
 
-    await page.goto(templates_json["url"], { waitUntil: "networkidle2" });
-
+    await page.goto(data["url"], { waitUntil: "networkidle2" });
     let element;
     try {
-      await page.waitForSelector(templates_json["elem_query_selector"]), {visible: true, hidden: false};
-      element = await page.$(templates_json["elem_query_selector"]);
+      await page.waitForSelector(data["elem_query_selector"]), {visible: true, hidden: false};
+      element = await page.$(data["elem_query_selector"]);
     } catch (e) {
-        console.log(e)
-        const message = makeMessageObj(templates_json["name"], templates_json["url"], false, 0, "-", "no element found");
-        ws.send(JSON.stringify(message));
-        continue;
+      const message = makeMessageObj(data["name"], data["url"], false, 0, "-", "no element found");
+      ws.send(JSON.stringify(message));
+      return;
     }
 
     const text_content = await page.evaluate((el) => el.textContent, element);
-    if (
-      !text_content
-        .toLowerCase()
-        .includes(templates_json["elem_contains_content"].toLowerCase())
-    ) {
-      const message = makeMessageObj(
-        templates_json["name"],
-        templates_json["url"],
-        false,
-        0,
-        "-",
-        "element does not contain content"
-      );
+    if (!text_content.toLowerCase().includes(data["elem_contains_content"].toLowerCase())) {
+      const message = makeMessageObj(data["name"], data["url"], false, 0, "-", "element does not contain content" );
       ws.send(JSON.stringify(message));
       element.dispose();
-      continue;
+      return;
     }
-    const [wayback_count, wayback_url] = await getWayback(
-      templates_json["url"]
-    );
-    const message = makeMessageObj(
-      templates_json["name"],
-      templates_json["url"],
-      true,
-      wayback_count,
-      wayback_count > 0 ? wayback_url : "-",
-      "-"
-    );
+
+    const [wayback_count, wayback_url] = await getWayback(data["url"]);
+    const message = makeMessageObj(data["name"], data["url"], true, wayback_count, wayback_count > 0 ? wayback_url : "-", "-");
     ws.send(JSON.stringify(message));
     element.dispose();
+  });
+
+  const templates_jsons = await get_templates_jsons(username);
+  for (const templates_json of templates_jsons) {
+    cluster.queue(templates_json);
   }
-  browser.close();
+
+  await cluster.idle();
+  await cluster.close();
   ws.send(JSON.stringify({ topic: "stalkDone" }));
 };
 
