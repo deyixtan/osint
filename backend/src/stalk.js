@@ -1,17 +1,13 @@
 import fs from "fs";
 import path from "path";
-import puppeteer from "puppeteer";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth"
 import { canStalk } from "./events/handlers.js";
+
+puppeteer.use(StealthPlugin())
 
 const __dirname = path.resolve();
 const TEMPLATES_DIR_PATH = path.join(__dirname, "templates");
-const BROWSER_HEADERS = {
-  Accept: "*/*",
-  Connection: "keep-alive",
-  "Accept-Encoding": "gzip,deflate",
-};
-const BROWSER_USER_AGENT =
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.1.2 Safari/603.3.8";
 
 const get_templates_jsons = async (username) => {
   const processed_jsons = [];
@@ -60,10 +56,8 @@ const makeMessageObj = (
 const stalk = async (ws, username) => {
   ws.send(JSON.stringify({ topic: "clearResults" }));
 
-  const results = [];
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
-  await page.setExtraHTTPHeaders(BROWSER_HEADERS);
   await page.setViewport({ width: 1080, height: 1024 });
 
   const templates_jsons = await get_templates_jsons(username);
@@ -73,25 +67,17 @@ const stalk = async (ws, username) => {
       return;
     }
 
-    let user_agent = templates_json["user-agent"];
-    if (!user_agent) user_agent = BROWSER_USER_AGENT;
-
-    await page.setUserAgent(user_agent);
     await page.goto(templates_json["url"], { waitUntil: "networkidle2" });
-    //await page.screenshot({ path: `${templates_json["name"]}.png` });
 
-    const element = await page.$(templates_json["elem_query_selector"]);
-    if (!element) {
-      const message = makeMessageObj(
-        templates_json["name"],
-        templates_json["url"],
-        false,
-        0,
-        "-",
-        "no element found"
-      );
-      ws.send(JSON.stringify(message));
-      continue;
+    let element;
+    try {
+      await page.waitForSelector(templates_json["elem_query_selector"]), {visible: true, hidden: false};
+      element = await page.$(templates_json["elem_query_selector"]);
+    } catch (e) {
+        console.log(e)
+        const message = makeMessageObj(templates_json["name"], templates_json["url"], false, 0, "-", "no element found");
+        ws.send(JSON.stringify(message));
+        continue;
     }
 
     const text_content = await page.evaluate((el) => el.textContent, element);
