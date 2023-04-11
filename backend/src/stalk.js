@@ -60,6 +60,9 @@ const stalk = async (ws, username) => {
   const cluster = await Cluster.launch({
     concurrency: Cluster.CONCURRENCY_CONTEXT,
     maxConcurrency: 10,
+    // puppeteerOptions: {
+    //   executablePath: '/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge',
+    // }
   });
 
   await cluster.task(async ({ page, data: data }) => {
@@ -72,6 +75,7 @@ const stalk = async (ws, username) => {
     await page.goto(data["url"], { waitUntil: "networkidle2" });
     let element;
     try {
+      // await page.screenshot({ path: `${data["name"]}.png` });
       await page.waitForSelector(data["elem_query_selector"]), {visible: true, hidden: false};
       element = await page.$(data["elem_query_selector"]);
     } catch (e) {

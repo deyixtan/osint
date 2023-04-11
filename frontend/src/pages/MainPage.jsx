@@ -38,6 +38,8 @@ const MainPage = () => {
   return (
     <Box px="2" m={2}>
       <UsernameForm ws={ws} />
+      <br />
+      <br />
       <StalkOutput ws={ws} />
     </Box>
   );

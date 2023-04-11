@@ -47,6 +47,8 @@ const UsernameForm = ({ ws }) => {
         placeholder="Please specify target username"
         onChange={handleUsernameChange}
       />
+      <br />
+      <br />
       <ButtonGroup>
         <Button
           variant="solid"
